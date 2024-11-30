@@ -117,6 +117,18 @@ func (s *Scanner) addTokenWithLiteral(token TokenType, literal any) {
 	s.tokens = append(s.tokens, Token{token, string(text), literal, s.line})
 }
 
+func (s *Scanner) match(expected rune, truthy TokenType, falsy TokenType) TokenType {
+	if s.isAtEnd() {
+		return falsy
+	}
+	if s.source[s.current] != expected {
+		return falsy
+	}
+
+	s.current++
+	return truthy
+}
+
 func (s *Scanner) scanToken() {
 	c := s.advance()
 	switch c {
@@ -149,6 +161,18 @@ func (s *Scanner) scanToken() {
 		break
 	case '*':
 		s.addToken(STAR)
+		break
+	case '!':
+		s.addToken(s.match('=', BANG_EQUAL, BANG))
+		break
+	case '=':
+		s.addToken(s.match('=', EQUAL_EQUAL, EQUAL))
+		break
+	case '<':
+		s.addToken(s.match('=', LESS_EQUAL, LESS))
+		break
+	case '>':
+		s.addToken(s.match('=', GREATER_EQUAL, GREATER))
 		break
 	default:
 		// todo: call error on Lox
