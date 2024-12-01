@@ -70,17 +70,38 @@ func (t Token) toString() string {
 }
 
 type Scanner struct {
-	source  []rune
-	tokens  []Token
-	start   int
-	current int
-	line    int
+	source   []rune
+	tokens   []Token
+	start    int
+	current  int
+	line     int
+	keywords map[string]TokenType
 }
 
 func makeScanner(source []rune) Scanner {
+	keywords := map[string]TokenType{
+		"and":    AND,
+		"class":  CLASS,
+		"else":   ELSE,
+		"false":  FALSE,
+		"for":    FOR,
+		"fun":    FUN,
+		"if":     IF,
+		"nil":    NIL,
+		"or":     OR,
+		"print":  PRINT,
+		"return": RETURN,
+		"super":  SUPER,
+		"this":   THIS,
+		"true":   TRUE,
+		"var":    VAR,
+		"while":  WHILE,
+	}
+
 	return Scanner{
-		source: source,
-		line:   1,
+		source:   source,
+		line:     1,
+		keywords: keywords,
 	}
 
 }
@@ -170,8 +191,14 @@ func (s *Scanner) identifier() {
 	for isAlphaNumeric(s.peek()) {
 		s.advance()
 	}
+	text := string(s.source[s.start:s.current])
+	tokenType, has := s.keywords[text]
 
-	s.addToken(IDENTIFIER)
+	if !has {
+		tokenType = IDENTIFIER
+	}
+
+	s.addToken(tokenType)
 }
 
 func (s *Scanner) string() {
