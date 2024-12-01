@@ -146,6 +146,18 @@ func (s *Scanner) peek() rune {
 	return s.source[s.current]
 }
 
+func (s *Scanner) peekNext() rune {
+	if s.current+1 >= len(s.source) {
+		return '\000'
+	}
+
+	return s.source[s.current+1]
+}
+
+func isDigit(c rune) bool {
+	return c >= '0' && c <= '9'
+}
+
 func (s *Scanner) string() {
 	for s.peek() != '"' && !s.isAtEnd() {
 		if s.peek() == '\n' {
@@ -166,6 +178,25 @@ func (s *Scanner) string() {
 	// Trim the surrounding quotes.
 	value := s.source[s.start+1 : s.current-1]
 	s.addTokenWithLiteral(STRING, value)
+}
+
+func (s *Scanner) number() {
+	for isDigit(s.peek()) {
+		s.advance()
+	}
+	// Look for a fractional part.
+	if s.peek() == '.' && isDigit(s.peekNext()) {
+		// Consume the "."
+		s.advance()
+
+		for isDigit(s.peek()) {
+			s.advance()
+		}
+	}
+
+	literal := s.source[s.start:s.current]
+	// todo: convert to double?
+	s.addTokenWithLiteral(NUMBER, literal)
 }
 
 func (s *Scanner) scanToken() {
@@ -235,8 +266,12 @@ func (s *Scanner) scanToken() {
 		s.string()
 		break
 	default:
-		// todo: call error on Lox
-		panic("unexpected token")
+		if isDigit(c) {
+			s.number()
+		} else {
+			// todo: call error on Lox
+			panic("unexpected token")
+		}
 	}
 }
 
