@@ -117,16 +117,55 @@ func (s *Scanner) addTokenWithLiteral(token TokenType, literal any) {
 	s.tokens = append(s.tokens, Token{token, string(text), literal, s.line})
 }
 
-func (s *Scanner) match(expected rune, truthy TokenType, falsy TokenType) TokenType {
+func (s *Scanner) match(expected rune) bool {
 	if s.isAtEnd() {
-		return falsy
+		return false
 	}
 	if s.source[s.current] != expected {
-		return falsy
+		return false
 	}
 
 	s.current++
-	return truthy
+	return true
+}
+
+func (s *Scanner) matchAssign(expected rune, truthy TokenType, falsy TokenType) TokenType {
+	if s.match(expected) {
+		return truthy
+
+	} else {
+		return falsy
+	}
+}
+
+func (s *Scanner) peek() rune {
+	if s.isAtEnd() {
+		// todo: how is this work?
+		return '\000'
+	}
+	return s.source[s.current]
+}
+
+func (s *Scanner) string() {
+	for s.peek() != '"' && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
+	}
+
+	if s.isAtEnd() {
+		// todo: use lox.error
+		panic("Unterminated string.")
+		return
+	}
+
+	// The closing ".
+	s.advance()
+
+	// Trim the surrounding quotes.
+	value := s.source[s.start+1 : s.current-1]
+	s.addTokenWithLiteral(STRING, value)
 }
 
 func (s *Scanner) scanToken() {
@@ -163,16 +202,37 @@ func (s *Scanner) scanToken() {
 		s.addToken(STAR)
 		break
 	case '!':
-		s.addToken(s.match('=', BANG_EQUAL, BANG))
+		s.addToken(s.matchAssign('=', BANG_EQUAL, BANG))
 		break
 	case '=':
-		s.addToken(s.match('=', EQUAL_EQUAL, EQUAL))
+		s.addToken(s.matchAssign('=', EQUAL_EQUAL, EQUAL))
 		break
 	case '<':
-		s.addToken(s.match('=', LESS_EQUAL, LESS))
+		s.addToken(s.matchAssign('=', LESS_EQUAL, LESS))
 		break
 	case '>':
-		s.addToken(s.match('=', GREATER_EQUAL, GREATER))
+		s.addToken(s.matchAssign('=', GREATER_EQUAL, GREATER))
+		break
+	case '/':
+		if s.match('/') {
+			// A comment goes until the end of the line.
+			for s.peek() != '\n' && !s.isAtEnd() {
+				s.advance()
+			}
+		} else {
+			s.addToken(SLASH)
+		}
+		break
+	case ' ':
+	case '\r':
+	case '\t':
+		// Ignore whitespace.
+		break
+	case '\n':
+		s.line++
+		break
+	case '"':
+		s.string()
 		break
 	default:
 		// todo: call error on Lox
