@@ -1,7 +1,1 @@
-// this is a comment
-(( )){} // grouping stuff
-!*+-/=<> <= == // operators
-"string literal"
-2342342 234.32433
-2323.234234
-hello bello
+1+3 == 3+3 ++

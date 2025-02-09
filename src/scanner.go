@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type TokenType string
@@ -247,7 +248,12 @@ func (s *Scanner) number() {
 
 	literal := s.source[s.start:s.current]
 	// todo: convert to double?
-	s.addTokenWithLiteral(NUMBER, literal)
+	f, err := strconv.ParseFloat(string(literal), 64)
+	if err != nil {
+		panic("Bad number literal")
+	}
+
+	s.addTokenWithLiteral(NUMBER, f)
 }
 
 func (s *Scanner) scanToken() {
@@ -370,8 +376,13 @@ func (l *Lox) error(line int, message string) {
 func (l *Lox) run(source []rune) {
 	scanner := makeScanner(source)
 	tokens := scanner.scanTokens()
+	parser := makeParser(tokens)
+	expression := parser.parse()
 
-	for _, token := range tokens {
-		fmt.Println(token)
+	if l.hadError {
+		return
 	}
+
+	println(expression)
+	println(AstPrinter{}.Print(expression))
 }
