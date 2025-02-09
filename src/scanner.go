@@ -377,9 +377,11 @@ func (l *Lox) run(source []rune) {
 	scanner := makeScanner(source)
 	tokens := scanner.scanTokens()
 	parser := makeParser(tokens)
-	expression := parser.parse()
+	expression, err := parser.parse()
 
-	if l.hadError {
+	if l.hadError || err != nil {
+		// todo: use report
+		println(err)
 		return
 	}
 

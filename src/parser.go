@@ -1,5 +1,7 @@
 package src
 
+import "fmt"
+
 type Parser struct {
 	tokens  []Token
 	current int
@@ -49,9 +51,14 @@ func (p *Parser) match(tokenTypes ...TokenType) bool {
 	return false
 }
 
-func (p *Parser) parse() Expr {
-	// todo add "try/catch" here
-	return p.expression()
+func (p *Parser) parse() (expr Expr, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("syntax error", r)
+		}
+	}()
+
+	return p.expression(), nil
 }
 
 func (p *Parser) expression() Expr {
@@ -138,7 +145,8 @@ func (p *Parser) primary() Expr {
 		return GroupingExpr{Expression: expr}
 	}
 
-	panic("todo: Expect expression.")
+	// todo: better error object
+	panic(fmt.Errorf("todo: Expect expression. %+v", p.peek()))
 }
 
 func (p *Parser) consume(tokenType TokenType, message string) Token {
