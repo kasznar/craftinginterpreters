@@ -387,4 +387,7 @@ func (l *Lox) run(source []rune) {
 
 	println(expression)
 	println(AstPrinter{}.Print(expression))
+
+	interpreter := Interpreter{}
+	interpreter.Interpret(expression)
 }
