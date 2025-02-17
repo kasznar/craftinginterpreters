@@ -2,7 +2,14 @@ package src
 
 import "fmt"
 
-type Interpreter struct{}
+type Interpreter struct {
+	environment Environment
+}
+
+func NewInterpreter() Interpreter {
+	environment := NewEnvironment()
+	return Interpreter{environment}
+}
 
 func (i *Interpreter) Interpret(statements []Stmt) {
 	// todo: error handling
@@ -69,6 +76,16 @@ func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) {
 func (i *Interpreter) VisitPrintStmt(stmt PrintStmt) {
 	value := i.evaluate(stmt.expression)
 	fmt.Println(value)
+}
+
+func (i *Interpreter) VisitVarStmt(stmt VarStmt) {
+	var value any
+
+	if stmt.initializer != nil {
+		value = i.evaluate(*stmt.initializer)
+	}
+
+	i.environment.define(stmt.name.lexeme, value)
 }
 
 func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) any {
@@ -141,4 +158,8 @@ func (i *Interpreter) VisitUnaryExpr(expr UnaryExpr) any {
 	}
 
 	return nil
+}
+
+func (i *Interpreter) VisitVariableExpr(expr VariableExpr) any {
+	return i.environment.get(expr.Name)
 }

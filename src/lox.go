@@ -57,6 +57,6 @@ func (l *Lox) run(source []rune) {
 		return
 	}
 
-	interpreter := Interpreter{}
+	interpreter := NewInterpreter()
 	interpreter.Interpret(statements)
 }

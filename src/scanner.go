@@ -72,7 +72,7 @@ func NewToken(tokenType TokenType,
 	return Token{tokenType, lexeme, literal, line}
 }
 
-func (t Token) toString() string {
+func (t Token) String() string {
 	return fmt.Sprintf("%s %s %s", t.tokenType, t.lexeme, t.literal)
 }
 

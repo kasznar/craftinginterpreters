@@ -62,10 +62,33 @@ func (p *Parser) parse() (statements []Stmt, err error) {
 	statements = make([]Stmt, 0)
 
 	for !p.isAtEnd() {
-		statements = append(statements, p.statement())
+		statements = append(statements, p.declaration())
 	}
 
 	return statements, nil
+}
+
+func (p *Parser) declaration() Stmt {
+	// todo: error handling
+
+	if p.match(VAR) {
+		return p.varDeclaration()
+	}
+
+	return p.statement()
+}
+
+func (p *Parser) varDeclaration() Stmt {
+	name := p.consume(IDENTIFIER, "Expect variable Name")
+
+	var initializer Expr
+
+	if p.match(EQUAL) {
+		initializer = p.expression()
+	}
+
+	p.consume(SEMICOLON, "Expect ';' after variable declaration.")
+	return VarStmt{initializer: &initializer, name: name}
 }
 
 func (p *Parser) statement() Stmt {
@@ -81,14 +104,6 @@ func (p *Parser) printStatement() Stmt {
 	p.consume(SEMICOLON, "Expect ;, after value")
 	return PrintStmt{expression: value}
 }
-
-/*
-private Stmt expressionStatement() {
-    Expr expr = expression();
-    consume(SEMICOLON, "Expect ';' after expression.");
-    return new Stmt.Expression(expr);
-  }
-*/
 
 func (p *Parser) expressionStatement() Stmt {
 	expr := p.expression()
@@ -172,6 +187,10 @@ func (p *Parser) primary() Expr {
 
 	if p.match(NUMBER, STRING) {
 		return LiteralExpr{Value: p.previous().literal}
+	}
+
+	if p.match(IDENTIFIER) {
+		return VariableExpr{Name: p.previous()}
 	}
 
 	if p.match(LEFT_PAREN) {

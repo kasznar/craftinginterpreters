@@ -4,6 +4,11 @@ import "fmt"
 
 type AstPrinter struct{}
 
+func (a AstPrinter) VisitVariableExpr(expr VariableExpr) any {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (a AstPrinter) VisitBinaryExpr(expr BinaryExpr) any {
 	return a.parenthesize(expr.Operator.lexeme, expr.Left, expr.Right)
 }
