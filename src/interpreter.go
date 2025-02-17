@@ -4,11 +4,16 @@ import "fmt"
 
 type Interpreter struct{}
 
-func (i *Interpreter) Interpret(expr Expr) {
+func (i *Interpreter) Interpret(statements []Stmt) {
 	// todo: error handling
-	value := i.evaluate(expr)
+	for j := 0; j < len(statements); j++ {
+		stmt := statements[j]
+		i.execute(stmt)
+	}
+}
 
-	fmt.Println("value: ", value)
+func (i *Interpreter) execute(stmt Stmt) {
+	stmt.Accept(i)
 }
 
 func (i *Interpreter) evaluate(expr Expr) any {
@@ -55,6 +60,15 @@ func (i *Interpreter) checkNumberOperands(operator Token, left any, right any) {
 	}
 
 	panic(fmt.Errorf("%+v operands must be a numbers", operator))
+}
+
+func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) {
+	i.evaluate(stmt.expression)
+}
+
+func (i *Interpreter) VisitPrintStmt(stmt PrintStmt) {
+	value := i.evaluate(stmt.expression)
+	fmt.Println(value)
 }
 
 func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) any {

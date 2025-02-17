@@ -227,7 +227,7 @@ func (s *Scanner) string() {
 
 	// Trim the surrounding quotes.
 	value := s.source[s.start+1 : s.current-1]
-	s.addTokenWithLiteral(STRING, value)
+	s.addTokenWithLiteral(STRING, string(value))
 }
 
 func (s *Scanner) number() {

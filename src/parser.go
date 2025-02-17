@@ -51,14 +51,49 @@ func (p *Parser) match(tokenTypes ...TokenType) bool {
 	return false
 }
 
-func (p *Parser) parse() (expr Expr, err error) {
+func (p *Parser) parse() (statements []Stmt, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("syntax error", r)
 		}
 	}()
 
-	return p.expression(), nil
+	// todo: what happens if this initializer is removed?
+	statements = make([]Stmt, 0)
+
+	for !p.isAtEnd() {
+		statements = append(statements, p.statement())
+	}
+
+	return statements, nil
+}
+
+func (p *Parser) statement() Stmt {
+	if p.match(PRINT) {
+		return p.printStatement()
+	}
+
+	return p.expressionStatement()
+}
+
+func (p *Parser) printStatement() Stmt {
+	value := p.expression()
+	p.consume(SEMICOLON, "Expect ;, after value")
+	return PrintStmt{expression: value}
+}
+
+/*
+private Stmt expressionStatement() {
+    Expr expr = expression();
+    consume(SEMICOLON, "Expect ';' after expression.");
+    return new Stmt.Expression(expr);
+  }
+*/
+
+func (p *Parser) expressionStatement() Stmt {
+	expr := p.expression()
+	p.consume(SEMICOLON, "Expect ';' after expression.")
+	return ExpressionStmt{expression: expr}
 }
 
 func (p *Parser) expression() Expr {

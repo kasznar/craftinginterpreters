@@ -49,7 +49,7 @@ func (l *Lox) run(source []rune) {
 	scanner := makeScanner(source)
 	tokens := scanner.scanTokens()
 	parser := makeParser(tokens)
-	expression, err := parser.parse()
+	statements, err := parser.parse()
 
 	if l.hadError || err != nil {
 		// todo: use report
@@ -57,9 +57,6 @@ func (l *Lox) run(source []rune) {
 		return
 	}
 
-	println(expression)
-	println(AstPrinter{}.Print(expression))
-
 	interpreter := Interpreter{}
-	interpreter.Interpret(expression)
+	interpreter.Interpret(statements)
 }
