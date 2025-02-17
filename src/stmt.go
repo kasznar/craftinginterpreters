@@ -8,6 +8,7 @@ type StmtVisitor interface {
 	VisitExpressionStmt(stmt ExpressionStmt)
 	VisitPrintStmt(stmt PrintStmt)
 	VisitVarStmt(stmt VarStmt)
+	VisitBlockStmt(stmt BlockStmt)
 }
 
 type ExpressionStmt struct {
@@ -33,4 +34,12 @@ type VarStmt struct {
 
 func (s VarStmt) Accept(visitor StmtVisitor) {
 	visitor.VisitVarStmt(s)
+}
+
+type BlockStmt struct {
+	statements []Stmt
+}
+
+func (s BlockStmt) Accept(visitor StmtVisitor) {
+	visitor.VisitBlockStmt(s)
 }

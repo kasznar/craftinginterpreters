@@ -3,11 +3,11 @@ package src
 import "fmt"
 
 type Interpreter struct {
-	environment Environment
+	environment *Environment
 }
 
 func NewInterpreter() Interpreter {
-	environment := NewEnvironment()
+	environment := NewEnvironment(nil)
 	return Interpreter{environment}
 }
 
@@ -21,6 +21,22 @@ func (i *Interpreter) Interpret(statements []Stmt) {
 
 func (i *Interpreter) execute(stmt Stmt) {
 	stmt.Accept(i)
+}
+
+func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) {
+	previous := i.environment
+
+	i.environment = environment
+
+	defer func() {
+		i.environment = previous
+	}()
+
+	for j := 0; j < len(statements); j++ {
+		statement := statements[j]
+		i.execute(statement)
+	}
+
 }
 
 func (i *Interpreter) evaluate(expr Expr) any {
@@ -168,4 +184,9 @@ func (i *Interpreter) VisitUnaryExpr(expr UnaryExpr) any {
 
 func (i *Interpreter) VisitVariableExpr(expr VariableExpr) any {
 	return i.environment.get(expr.Name)
+}
+
+func (i *Interpreter) VisitBlockStmt(stmt BlockStmt) {
+	blockEnv := NewEnvironment(i.environment)
+	i.executeBlock(stmt.statements, blockEnv)
 }
