@@ -4,6 +4,11 @@ import "fmt"
 
 type AstPrinter struct{}
 
+func (a AstPrinter) VisitAssignExpr(expr AssignExpr) any {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (a AstPrinter) VisitVariableExpr(expr VariableExpr) any {
 	//TODO implement me
 	panic("implement me")

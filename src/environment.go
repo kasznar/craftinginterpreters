@@ -25,3 +25,14 @@ func (e *Environment) get(name Token) any {
 
 	panic(fmt.Errorf(name.String(), "Undefined variable '"+name.lexeme+"'."))
 }
+
+func (e *Environment) assign(name Token, value any) {
+
+	if _, has := e.values[name.lexeme]; has {
+		e.values[name.lexeme] = value
+		return
+	}
+
+	panic(fmt.Errorf(name.String(), "Undefined variable '"+name.lexeme+"'."))
+
+}

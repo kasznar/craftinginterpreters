@@ -88,6 +88,12 @@ func (i *Interpreter) VisitVarStmt(stmt VarStmt) {
 	i.environment.define(stmt.name.lexeme, value)
 }
 
+func (i *Interpreter) VisitAssignExpr(expr AssignExpr) any {
+	value := i.evaluate(expr.Value)
+	i.environment.assign(expr.Name, value)
+	return value
+}
+
 func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) any {
 	left := i.evaluate(expr.Left)
 	right := i.evaluate(expr.Right)
