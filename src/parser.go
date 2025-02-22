@@ -91,6 +91,15 @@ func (p *Parser) varDeclaration() Stmt {
 	return VarStmt{initializer: &initializer, name: name}
 }
 
+func (p *Parser) whileStatement() Stmt {
+	p.consume(LEFT_PAREN, "Expect '(' after 'while'.")
+	condition := p.expression()
+	p.consume(RIGHT_PAREN, "Expect ')' after condition.")
+	body := p.statement()
+
+	return WhileStmt{condition, body}
+}
+
 func (p *Parser) block() []Stmt {
 	statements := make([]Stmt, 0)
 
@@ -108,6 +117,9 @@ func (p *Parser) statement() Stmt {
 	}
 	if p.match(PRINT) {
 		return p.printStatement()
+	}
+	if p.match(WHILE) {
+		return p.whileStatement()
 	}
 	if p.match(LEFT_BRACE) {
 		return BlockStmt{statements: p.block()}

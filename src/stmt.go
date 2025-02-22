@@ -10,6 +10,7 @@ type StmtVisitor interface {
 	VisitVarStmt(stmt VarStmt)
 	VisitBlockStmt(stmt BlockStmt)
 	VisitIfStmt(stmt IfStmt)
+	VisitWhileStmt(stmt WhileStmt)
 }
 
 type ExpressionStmt struct {
@@ -53,4 +54,13 @@ type IfStmt struct {
 
 func (s IfStmt) Accept(visitor StmtVisitor) {
 	visitor.VisitIfStmt(s)
+}
+
+type WhileStmt struct {
+	condition Expr
+	body      Stmt
+}
+
+func (s WhileStmt) Accept(visitor StmtVisitor) {
+	visitor.VisitWhileStmt(s)
 }
