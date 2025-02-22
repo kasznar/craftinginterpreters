@@ -97,7 +97,9 @@ func (i *Interpreter) VisitPrintStmt(stmt PrintStmt) {
 func (i *Interpreter) VisitVarStmt(stmt VarStmt) {
 	var value any
 
-	if stmt.initializer != nil {
+	// todo: need to dereference otherwise not going to work
+	// https://go.dev/doc/faq#nil_error
+	if *stmt.initializer != nil {
 		value = i.evaluate(*stmt.initializer)
 	}
 

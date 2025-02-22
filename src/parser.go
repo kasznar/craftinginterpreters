@@ -1,6 +1,9 @@
 package src
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 type Parser struct {
 	tokens  []Token
@@ -81,6 +84,7 @@ func (p *Parser) declaration() Stmt {
 func (p *Parser) varDeclaration() Stmt {
 	name := p.consume(IDENTIFIER, "Expect variable Name")
 
+	// todo: nil litral?
 	var initializer Expr
 
 	if p.match(EQUAL) {
@@ -112,6 +116,9 @@ func (p *Parser) block() []Stmt {
 }
 
 func (p *Parser) statement() Stmt {
+	if p.match(FOR) {
+		return p.forStatement()
+	}
 	if p.match(IF) {
 		return p.ifStatement()
 	}
@@ -126,6 +133,68 @@ func (p *Parser) statement() Stmt {
 	}
 
 	return p.expressionStatement()
+}
+
+func (p *Parser) forStatement() Stmt {
+	p.consume(LEFT_PAREN, "Expect '(' after 'for'.")
+	// todo: what is the default value here?
+	var initializer *Stmt
+
+	if p.match(SEMICOLON) {
+		initializer = nil
+	} else if p.match(VAR) {
+		varDec := p.varDeclaration()
+		initializer = &varDec
+	} else {
+		exprStmt := p.expressionStatement()
+		initializer = &exprStmt
+	}
+
+	var condition *Expr
+
+	if !p.check(SEMICOLON) {
+		conditionExpr := p.expression()
+		condition = &conditionExpr
+	}
+	p.consume(SEMICOLON, "Expect ';' after loop condition.")
+
+	var increment *Expr
+	if !p.check(RIGHT_PAREN) {
+		incrementExpr := p.expression()
+		increment = &incrementExpr
+	}
+	p.consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+
+	body := p.statement()
+
+	if increment != nil {
+		body = BlockStmt{
+			statements: []Stmt{
+				body,
+				ExpressionStmt{expression: *increment},
+			},
+		}
+	}
+
+	if condition == nil {
+		literalExpr := LiteralExpr{Value: true}
+		// todo: double check this
+		casted := reflect.ValueOf(literalExpr).Interface().(Expr)
+		condition = &casted
+	}
+
+	body = WhileStmt{condition: *condition, body: body}
+
+	if initializer != nil {
+		body = BlockStmt{
+			statements: []Stmt{
+				*initializer,
+				body,
+			},
+		}
+	}
+
+	return body
 }
 
 func (p *Parser) ifStatement() Stmt {
