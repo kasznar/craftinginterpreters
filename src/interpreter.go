@@ -190,3 +190,27 @@ func (i *Interpreter) VisitBlockStmt(stmt BlockStmt) {
 	blockEnv := NewEnvironment(i.environment)
 	i.executeBlock(stmt.statements, blockEnv)
 }
+
+func (i *Interpreter) VisitIfStmt(stmt IfStmt) {
+	if i.isTruthy(i.evaluate(stmt.condition)) {
+		i.execute(stmt.thenBranch)
+	} else if stmt.elseBranch != nil {
+		i.execute(*stmt.elseBranch)
+	}
+}
+
+func (i *Interpreter) VisitLogicalExpr(expr LogicalExpr) any {
+	left := i.evaluate(expr.left)
+
+	if expr.operator.tokenType == OR {
+		if i.isTruthy(left) {
+			return left
+		}
+	} else {
+		if !i.isTruthy(left) {
+			return left
+		}
+	}
+
+	return i.evaluate(expr.right)
+}
