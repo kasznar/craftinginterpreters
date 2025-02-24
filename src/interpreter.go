@@ -3,12 +3,17 @@ package src
 import "fmt"
 
 type Interpreter struct {
+	globals     *Environment
 	environment *Environment
 }
 
 func NewInterpreter() Interpreter {
-	environment := NewEnvironment(nil)
-	return Interpreter{environment}
+	globals := NewEnvironment(nil)
+
+	globals.define("clock", Clock{})
+
+	environment := NewEnvironment(globals)
+	return Interpreter{globals, environment}
 }
 
 func (i *Interpreter) Interpret(statements []Stmt) {
@@ -221,4 +226,30 @@ func (i *Interpreter) VisitWhileStmt(stmt WhileStmt) {
 	for i.isTruthy(i.evaluate(stmt.condition)) {
 		i.execute(stmt.body)
 	}
+}
+
+func (i *Interpreter) VisitCallExpr(expr CallExpr) any {
+	callee := i.evaluate(expr.callee)
+
+	arguments := make([]any, 0)
+
+	for _, argument := range expr.arguments {
+		arguments = append(arguments, i.evaluate(argument))
+	}
+	function, ok := callee.(LoxCallable)
+
+	if !ok {
+		panic(fmt.Errorf("can only call functions and classes. %+v", expr.paren))
+	}
+
+	if len(arguments) != function.Arity() {
+		panic(fmt.Errorf("wrong number of arguments"))
+	}
+
+	return function.Call(i, arguments)
+}
+
+func (i *Interpreter) VisitFunctionStmt(stmt FunctionStmt) {
+	function := LoxFunction{stmt}
+	i.environment.define(stmt.name.lexeme, function)
 }

@@ -73,12 +73,41 @@ func (p *Parser) parse() (statements []Stmt, err error) {
 
 func (p *Parser) declaration() Stmt {
 	// todo: error handling
-
+	if p.match(FUN) {
+		return p.function("functions")
+	}
 	if p.match(VAR) {
 		return p.varDeclaration()
 	}
 
 	return p.statement()
+}
+
+func (p *Parser) function(kind string) FunctionStmt {
+	name := p.consume(IDENTIFIER, "Expect "+kind+" name.")
+
+	p.consume(LEFT_PAREN, "Expect '(' after "+kind+" name.")
+	parameters := make([]Token, 0)
+
+	if !p.check(RIGHT_PAREN) {
+		for {
+			if len(parameters) >= 255 {
+				panic("too many parameters")
+			}
+
+			parameters = append(parameters, p.consume(IDENTIFIER, "Expect parameter name."))
+
+			if !p.match(COMMA) {
+				break
+			}
+		}
+	}
+	p.consume(RIGHT_PAREN, "Expect ')' after parameters.")
+
+	p.consume(LEFT_BRACE, "Expect '{' before "+kind+" body.")
+	body := p.block()
+
+	return FunctionStmt{name, parameters, body}
 }
 
 func (p *Parser) varDeclaration() Stmt {
@@ -327,7 +356,43 @@ func (p *Parser) unary() Expr {
 		return UnaryExpr{Operator: operator, Right: right}
 	}
 
-	return p.primary()
+	return p.call()
+}
+
+func (p *Parser) finishCall(callee Expr) Expr {
+	arguments := make([]Expr, 0)
+
+	if !p.check(RIGHT_PAREN) {
+		for {
+			if len(arguments) >= 255 {
+				panic(fmt.Errorf("can't have more than 255 arguments. %+v", p.peek()))
+			}
+
+			arguments = append(arguments, p.expression())
+
+			if !p.match(COMMA) {
+				break
+			}
+		}
+	}
+
+	paren := p.consume(RIGHT_PAREN, "Expect ')' after arguments.")
+
+	return CallExpr{callee, paren, arguments}
+}
+
+func (p *Parser) call() Expr {
+	expr := p.primary()
+
+	for {
+		if p.match(LEFT_PAREN) {
+			expr = p.finishCall(expr)
+		} else {
+			break
+		}
+	}
+
+	return expr
 }
 
 func (p *Parser) primary() Expr {

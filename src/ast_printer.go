@@ -4,19 +4,20 @@ import "fmt"
 
 type AstPrinter struct{}
 
+func (a AstPrinter) VisitCallExpr(expr CallExpr) any {
+	return fmt.Sprintf("%+v", expr)
+}
+
 func (a AstPrinter) VisitLogicalExpr(expr LogicalExpr) any {
-	//TODO implement me
-	panic("implement me")
+	return fmt.Sprintf("%+v", expr)
 }
 
 func (a AstPrinter) VisitAssignExpr(expr AssignExpr) any {
-	//TODO implement me
-	panic("implement me")
+	return fmt.Sprintf("%+v", expr)
 }
 
 func (a AstPrinter) VisitVariableExpr(expr VariableExpr) any {
-	//TODO implement me
-	panic("implement me")
+	return fmt.Sprintf("%+v", expr)
 }
 
 func (a AstPrinter) VisitBinaryExpr(expr BinaryExpr) any {
