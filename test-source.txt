@@ -1,5 +1,9 @@
-fun sayHi(first, last) {
-  print "Hi, " + first + " " + last + "!";
+fun fib(n) {
+  return fib(n - 2) + fib(n - 1);
 }
 
-sayHi("Dear", "Reader");
+print fib(5);
+
+
+
+

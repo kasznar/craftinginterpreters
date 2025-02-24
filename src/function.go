@@ -14,12 +14,19 @@ func (f LoxFunction) Arity() int {
 	return len(f.declaration.params)
 }
 
-func (f LoxFunction) Call(interpreter *Interpreter, arguments []any) any {
+func (f LoxFunction) Call(interpreter *Interpreter, arguments []any) (returnValue any) {
 	environment := NewEnvironment(interpreter.globals)
 
 	for i := 0; i < len(f.declaration.params); i++ {
 		environment.define(f.declaration.params[i].lexeme, arguments[i])
 	}
+
+	defer func() {
+		if exception := recover(); exception != nil {
+			rv := exception.(*Return)
+			returnValue = rv.value
+		}
+	}()
 
 	interpreter.executeBlock(f.declaration.body, environment)
 
@@ -28,4 +35,8 @@ func (f LoxFunction) Call(interpreter *Interpreter, arguments []any) any {
 
 func (f LoxFunction) String() string {
 	return "<fn " + f.declaration.name.lexeme + ">"
+}
+
+type Return struct {
+	value any
 }

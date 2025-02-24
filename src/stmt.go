@@ -12,6 +12,7 @@ type StmtVisitor interface {
 	VisitIfStmt(stmt IfStmt)
 	VisitWhileStmt(stmt WhileStmt)
 	VisitFunctionStmt(stmt FunctionStmt)
+	VisitReturnStmt(stmt ReturnStmt)
 }
 
 type ExpressionStmt struct {
@@ -74,4 +75,13 @@ type FunctionStmt struct {
 
 func (s FunctionStmt) Accept(visitor StmtVisitor) {
 	visitor.VisitFunctionStmt(s)
+}
+
+type ReturnStmt struct {
+	keyword Token
+	value   Expr
+}
+
+func (s ReturnStmt) Accept(visitor StmtVisitor) {
+	visitor.VisitReturnStmt(s)
 }

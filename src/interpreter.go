@@ -99,6 +99,15 @@ func (i *Interpreter) VisitPrintStmt(stmt PrintStmt) {
 	fmt.Println(value)
 }
 
+func (i *Interpreter) VisitReturnStmt(stmt ReturnStmt) {
+	var value any = nil
+	if stmt.value != nil {
+		value = i.evaluate(stmt.value)
+	}
+
+	panic(&Return{value})
+}
+
 func (i *Interpreter) VisitVarStmt(stmt VarStmt) {
 	var value any
 
@@ -201,7 +210,7 @@ func (i *Interpreter) VisitBlockStmt(stmt BlockStmt) {
 func (i *Interpreter) VisitIfStmt(stmt IfStmt) {
 	if i.isTruthy(i.evaluate(stmt.condition)) {
 		i.execute(stmt.thenBranch)
-	} else if stmt.elseBranch != nil {
+	} else if *stmt.elseBranch != nil {
 		i.execute(*stmt.elseBranch)
 	}
 }
