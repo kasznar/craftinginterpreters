@@ -12,7 +12,7 @@ func NewInterpreter() Interpreter {
 
 	globals.define("clock", Clock{})
 
-	environment := NewEnvironment(globals)
+	environment := globals
 	return Interpreter{globals, environment}
 }
 

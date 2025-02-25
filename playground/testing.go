@@ -2,34 +2,23 @@ package main
 
 import "fmt"
 
-type Return struct {
-	value any
+type Environment struct {
+	enclosing *Environment
+	values    map[string]any
 }
 
-func throwing() {
-	panic(&Return{5})
-}
-
-func getValue() (returnValue any) {
-
-	defer func() {
-		if exception := recover(); exception != nil {
-			rv, ok := exception.(*Return)
-			if !ok {
-				panic("not ok")
-			}
-			returnValue = rv.value
-		}
-
-	}()
-
-	throwing()
-	return nil
+func NewEnvironment(enclosing *Environment) *Environment {
+	return &Environment{
+		values:    map[string]any{},
+		enclosing: enclosing,
+	}
 }
 
 func main() {
-	val := getValue()
-	val = getValue()
-	val = getValue()
-	fmt.Println(val)
+	one := NewEnvironment(nil)
+	two := one
+
+	one.values["hello"] = "hello"
+
+	fmt.Println(two)
 }
