@@ -259,6 +259,6 @@ func (i *Interpreter) VisitCallExpr(expr CallExpr) any {
 }
 
 func (i *Interpreter) VisitFunctionStmt(stmt FunctionStmt) {
-	function := LoxFunction{stmt}
+	function := LoxFunction{stmt, i.environment}
 	i.environment.define(stmt.name.lexeme, function)
 }

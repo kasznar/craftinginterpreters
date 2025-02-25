@@ -8,6 +8,7 @@ type LoxCallable interface {
 
 type LoxFunction struct {
 	declaration FunctionStmt
+	closure     *Environment
 }
 
 func (f LoxFunction) Arity() int {
@@ -15,7 +16,7 @@ func (f LoxFunction) Arity() int {
 }
 
 func (f LoxFunction) Call(interpreter *Interpreter, arguments []any) (returnValue any) {
-	environment := NewEnvironment(interpreter.globals)
+	environment := NewEnvironment(f.closure)
 
 	for i := 0; i < len(f.declaration.params); i++ {
 		environment.define(f.declaration.params[i].lexeme, arguments[i])
