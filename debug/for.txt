@@ -1,0 +1,13 @@
+[]src.Stmt{
+    src.BlockStmt{
+        statements:[]
+            src.Stmt{
+            src.VarStmt{
+                name:src.Token{
+                    tokenType:"IDENTIFIER",
+                    lexeme:"i",
+                    literal:interface {}(nil), line:1},
+                    initializer:(*src.Expr)(0x14000104010)},
+            src.WhileStmt{
+                condition:src.BinaryExpr{Left:src.VariableExpr{Name:src.Token{tokenType:"IDENTIFIER", lexeme:"i", literal:interface {}(nil), line:1}}, Operator:src.Token{tokenType:"LESS", lexeme:"<", literal:interface {}(nil), line:1}, Right:src.LiteralExpr{Value:20}}, body:src.BlockStmt{statements:[]src.Stmt{src.BlockStmt{statements:[]src.Stmt{src.PrintStmt{expression:src.VariableExpr{Name:src.Token{tokenType:"IDENTIFIER", lexeme:"i", literal:interface {}(nil), line:2}}}}}, src.ExpressionStmt{expression:src.AssignExpr{Name:src.Token{tokenType:"IDENTIFIER", lexeme:"i", literal:interface {}(nil), line:1}, Value:src.BinaryExpr{Left:src.VariableExpr{Name:src.Token{tokenType:"IDENTIFIER", lexeme:"i", literal:interface {}(nil), line:1}}, Operator:src.Token{tokenType:"PLUS", lexeme:"+", literal:interface {}(nil), line:1}, Right:src.LiteralExpr{Value:1}}}}}}}}}}
+}
