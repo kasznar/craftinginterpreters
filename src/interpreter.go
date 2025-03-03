@@ -5,15 +5,17 @@ import "fmt"
 type Interpreter struct {
 	globals     *Environment
 	environment *Environment
+	// maps are reference types: https://stackoverflow.com/questions/2809543/pointer-to-a-map
+	locals map[Expr]int
 }
 
-func NewInterpreter() Interpreter {
+func NewInterpreter() *Interpreter {
 	globals := NewEnvironment(nil)
 
 	globals.define("clock", Clock{})
 
 	environment := globals
-	return Interpreter{globals, environment}
+	return &Interpreter{globals, environment, map[Expr]int{}}
 }
 
 func (i *Interpreter) Interpret(statements []Stmt) {
@@ -21,6 +23,18 @@ func (i *Interpreter) Interpret(statements []Stmt) {
 	for j := 0; j < len(statements); j++ {
 		stmt := statements[j]
 		i.execute(stmt)
+	}
+}
+
+func (i *Interpreter) resolve(expr Expr, depth int) {
+	i.locals[expr] = depth
+}
+
+func (i *Interpreter) lookUpVariable(name Token, expr Expr) any {
+	if distance, ok := i.locals[expr]; ok {
+		return i.environment.getAt(distance, name.lexeme)
+	} else {
+		return i.globals.get(name)
 	}
 }
 
@@ -122,6 +136,13 @@ func (i *Interpreter) VisitVarStmt(stmt VarStmt) {
 
 func (i *Interpreter) VisitAssignExpr(expr AssignExpr) any {
 	value := i.evaluate(expr.Value)
+
+	if distance, ok := i.locals[expr]; ok {
+		i.environment.assignAt(distance, expr.Name, value)
+	} else {
+		i.globals.assign(expr.Name, value)
+	}
+
 	i.environment.assign(expr.Name, value)
 	return value
 }
@@ -199,7 +220,7 @@ func (i *Interpreter) VisitUnaryExpr(expr UnaryExpr) any {
 }
 
 func (i *Interpreter) VisitVariableExpr(expr VariableExpr) any {
-	return i.environment.get(expr.Name)
+	return i.lookUpVariable(expr.Name, expr)
 }
 
 func (i *Interpreter) VisitBlockStmt(stmt BlockStmt) {

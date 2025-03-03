@@ -79,7 +79,8 @@ func (s FunctionStmt) Accept(visitor StmtVisitor) {
 
 type ReturnStmt struct {
 	keyword Token
-	value   Expr
+	// todo: optional value?
+	value Expr
 }
 
 func (s ReturnStmt) Accept(visitor StmtVisitor) {

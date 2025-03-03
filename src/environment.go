@@ -32,6 +32,10 @@ func (e *Environment) get(name Token) any {
 	panic(fmt.Errorf(name.String(), "Undefined variable '"+name.lexeme+"'."))
 }
 
+func (e *Environment) getAt(distance int, name string) any {
+	return e.ancestor(distance).values[name]
+}
+
 func (e *Environment) assign(name Token, value any) {
 
 	if _, has := e.values[name.lexeme]; has {
@@ -45,5 +49,18 @@ func (e *Environment) assign(name Token, value any) {
 	}
 
 	panic(fmt.Errorf(name.String(), "Undefined variable '"+name.lexeme+"'."))
+}
 
+func (e *Environment) assignAt(distance int, name Token, value any) {
+	e.ancestor(distance).values[name.lexeme] = value
+}
+
+func (e *Environment) ancestor(distance int) *Environment {
+	environment := e
+
+	for i := 0; i < distance; i++ {
+		environment = environment.enclosing
+	}
+
+	return environment
 }

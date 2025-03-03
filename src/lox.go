@@ -58,5 +58,8 @@ func (l *Lox) run(source []rune) {
 	}
 
 	interpreter := NewInterpreter()
+	resolver := NewResolver(interpreter)
+	resolver.resolveStmtList(statements)
+
 	interpreter.Interpret(statements)
 }
