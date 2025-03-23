@@ -5,14 +5,14 @@ type Expr interface {
 }
 
 type ExprVisitor interface {
-	VisitBinaryExpr(expr BinaryExpr) any
-	VisitGroupingExpr(expr GroupingExpr) any
-	VisitLiteralExpr(expr LiteralExpr) any
-	VisitUnaryExpr(expr UnaryExpr) any
-	VisitVariableExpr(expr VariableExpr) any
-	VisitAssignExpr(expr AssignExpr) any
-	VisitLogicalExpr(expr LogicalExpr) any
-	VisitCallExpr(expr CallExpr) any
+	VisitBinaryExpr(expr *BinaryExpr) any
+	VisitGroupingExpr(expr *GroupingExpr) any
+	VisitLiteralExpr(expr *LiteralExpr) any
+	VisitUnaryExpr(expr *UnaryExpr) any
+	VisitVariableExpr(expr *VariableExpr) any
+	VisitAssignExpr(expr *AssignExpr) any
+	VisitLogicalExpr(expr *LogicalExpr) any
+	VisitCallExpr(expr *CallExpr) any
 }
 
 type BinaryExpr struct {
@@ -21,7 +21,7 @@ type BinaryExpr struct {
 	Right    Expr
 }
 
-func (b BinaryExpr) Accept(visitor ExprVisitor) any {
+func (b *BinaryExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitBinaryExpr(b)
 }
 
@@ -29,7 +29,7 @@ type GroupingExpr struct {
 	Expression Expr
 }
 
-func (g GroupingExpr) Accept(visitor ExprVisitor) any {
+func (g *GroupingExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitGroupingExpr(g)
 }
 
@@ -37,7 +37,7 @@ type LiteralExpr struct {
 	Value any
 }
 
-func (e LiteralExpr) Accept(visitor ExprVisitor) any {
+func (e *LiteralExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitLiteralExpr(e)
 }
 
@@ -46,7 +46,7 @@ type UnaryExpr struct {
 	Right    Expr
 }
 
-func (e UnaryExpr) Accept(visitor ExprVisitor) any {
+func (e *UnaryExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitUnaryExpr(e)
 }
 
@@ -54,7 +54,7 @@ type VariableExpr struct {
 	Name Token
 }
 
-func (e VariableExpr) Accept(visitor ExprVisitor) any {
+func (e *VariableExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitVariableExpr(e)
 }
 
@@ -63,7 +63,7 @@ type AssignExpr struct {
 	Value Expr
 }
 
-func (e AssignExpr) Accept(visitor ExprVisitor) any {
+func (e *AssignExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitAssignExpr(e)
 }
 
@@ -73,7 +73,7 @@ type LogicalExpr struct {
 	right    Expr
 }
 
-func (e LogicalExpr) Accept(visitor ExprVisitor) any {
+func (e *LogicalExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitLogicalExpr(e)
 }
 
@@ -83,6 +83,6 @@ type CallExpr struct {
 	arguments []Expr
 }
 
-func (e CallExpr) Accept(visitor ExprVisitor) any {
+func (e *CallExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitCallExpr(e)
 }

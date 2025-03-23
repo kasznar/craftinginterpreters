@@ -7,7 +7,7 @@ type LoxCallable interface {
 }
 
 type LoxFunction struct {
-	declaration FunctionStmt
+	declaration *FunctionStmt
 	closure     *Environment
 }
 

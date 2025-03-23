@@ -6,6 +6,7 @@ type Interpreter struct {
 	globals     *Environment
 	environment *Environment
 	// maps are reference types: https://stackoverflow.com/questions/2809543/pointer-to-a-map
+	// todo: *Expr??
 	locals map[Expr]int
 }
 
@@ -104,16 +105,16 @@ func (i *Interpreter) checkNumberOperands(operator Token, left any, right any) {
 	panic(fmt.Errorf("%+v operands must be a numbers", operator))
 }
 
-func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) {
+func (i *Interpreter) VisitExpressionStmt(stmt *ExpressionStmt) {
 	i.evaluate(stmt.expression)
 }
 
-func (i *Interpreter) VisitPrintStmt(stmt PrintStmt) {
+func (i *Interpreter) VisitPrintStmt(stmt *PrintStmt) {
 	value := i.evaluate(stmt.expression)
 	fmt.Println(value)
 }
 
-func (i *Interpreter) VisitReturnStmt(stmt ReturnStmt) {
+func (i *Interpreter) VisitReturnStmt(stmt *ReturnStmt) {
 	var value any = nil
 	if stmt.value != nil {
 		value = i.evaluate(stmt.value)
@@ -122,7 +123,7 @@ func (i *Interpreter) VisitReturnStmt(stmt ReturnStmt) {
 	panic(&Return{value})
 }
 
-func (i *Interpreter) VisitVarStmt(stmt VarStmt) {
+func (i *Interpreter) VisitVarStmt(stmt *VarStmt) {
 	var value any
 
 	// todo: need to dereference otherwise not going to work
@@ -134,7 +135,7 @@ func (i *Interpreter) VisitVarStmt(stmt VarStmt) {
 	i.environment.define(stmt.name.lexeme, value)
 }
 
-func (i *Interpreter) VisitAssignExpr(expr AssignExpr) any {
+func (i *Interpreter) VisitAssignExpr(expr *AssignExpr) any {
 	value := i.evaluate(expr.Value)
 
 	if distance, ok := i.locals[expr]; ok {
@@ -147,7 +148,7 @@ func (i *Interpreter) VisitAssignExpr(expr AssignExpr) any {
 	return value
 }
 
-func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) any {
+func (i *Interpreter) VisitBinaryExpr(expr *BinaryExpr) any {
 	left := i.evaluate(expr.Left)
 	right := i.evaluate(expr.Right)
 
@@ -197,15 +198,15 @@ func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) any {
 	return nil
 }
 
-func (i *Interpreter) VisitGroupingExpr(expr GroupingExpr) any {
+func (i *Interpreter) VisitGroupingExpr(expr *GroupingExpr) any {
 	return i.evaluate(expr.Expression)
 }
 
-func (i *Interpreter) VisitLiteralExpr(expr LiteralExpr) any {
+func (i *Interpreter) VisitLiteralExpr(expr *LiteralExpr) any {
 	return expr.Value
 }
 
-func (i *Interpreter) VisitUnaryExpr(expr UnaryExpr) any {
+func (i *Interpreter) VisitUnaryExpr(expr *UnaryExpr) any {
 	right := i.evaluate(expr.Right)
 
 	switch expr.Operator.tokenType {
@@ -219,16 +220,16 @@ func (i *Interpreter) VisitUnaryExpr(expr UnaryExpr) any {
 	return nil
 }
 
-func (i *Interpreter) VisitVariableExpr(expr VariableExpr) any {
+func (i *Interpreter) VisitVariableExpr(expr *VariableExpr) any {
 	return i.lookUpVariable(expr.Name, expr)
 }
 
-func (i *Interpreter) VisitBlockStmt(stmt BlockStmt) {
+func (i *Interpreter) VisitBlockStmt(stmt *BlockStmt) {
 	blockEnv := NewEnvironment(i.environment)
 	i.executeBlock(stmt.statements, blockEnv)
 }
 
-func (i *Interpreter) VisitIfStmt(stmt IfStmt) {
+func (i *Interpreter) VisitIfStmt(stmt *IfStmt) {
 	if i.isTruthy(i.evaluate(stmt.condition)) {
 		i.execute(stmt.thenBranch)
 	} else if *stmt.elseBranch != nil {
@@ -236,7 +237,7 @@ func (i *Interpreter) VisitIfStmt(stmt IfStmt) {
 	}
 }
 
-func (i *Interpreter) VisitLogicalExpr(expr LogicalExpr) any {
+func (i *Interpreter) VisitLogicalExpr(expr *LogicalExpr) any {
 	left := i.evaluate(expr.left)
 
 	if expr.operator.tokenType == OR {
@@ -252,13 +253,13 @@ func (i *Interpreter) VisitLogicalExpr(expr LogicalExpr) any {
 	return i.evaluate(expr.right)
 }
 
-func (i *Interpreter) VisitWhileStmt(stmt WhileStmt) {
+func (i *Interpreter) VisitWhileStmt(stmt *WhileStmt) {
 	for i.isTruthy(i.evaluate(stmt.condition)) {
 		i.execute(stmt.body)
 	}
 }
 
-func (i *Interpreter) VisitCallExpr(expr CallExpr) any {
+func (i *Interpreter) VisitCallExpr(expr *CallExpr) any {
 	callee := i.evaluate(expr.callee)
 
 	arguments := make([]any, 0)
@@ -279,7 +280,7 @@ func (i *Interpreter) VisitCallExpr(expr CallExpr) any {
 	return function.Call(i, arguments)
 }
 
-func (i *Interpreter) VisitFunctionStmt(stmt FunctionStmt) {
+func (i *Interpreter) VisitFunctionStmt(stmt *FunctionStmt) {
 	function := LoxFunction{stmt, i.environment}
 	i.environment.define(stmt.name.lexeme, function)
 }

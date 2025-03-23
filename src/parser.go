@@ -83,7 +83,7 @@ func (p *Parser) declaration() Stmt {
 	return p.statement()
 }
 
-func (p *Parser) function(kind string) FunctionStmt {
+func (p *Parser) function(kind string) *FunctionStmt {
 	name := p.consume(IDENTIFIER, "Expect "+kind+" name.")
 
 	p.consume(LEFT_PAREN, "Expect '(' after "+kind+" name.")
@@ -107,7 +107,7 @@ func (p *Parser) function(kind string) FunctionStmt {
 	p.consume(LEFT_BRACE, "Expect '{' before "+kind+" body.")
 	body := p.block()
 
-	return FunctionStmt{name, parameters, body}
+	return &FunctionStmt{name, parameters, body}
 }
 
 func (p *Parser) varDeclaration() Stmt {
@@ -121,7 +121,8 @@ func (p *Parser) varDeclaration() Stmt {
 	}
 
 	p.consume(SEMICOLON, "Expect ';' after variable declaration.")
-	return VarStmt{initializer: &initializer, name: name}
+	// todo: how is this returning Stmt instead of *Stmt??
+	return &VarStmt{initializer: &initializer, name: name}
 }
 
 func (p *Parser) whileStatement() Stmt {
@@ -130,7 +131,7 @@ func (p *Parser) whileStatement() Stmt {
 	p.consume(RIGHT_PAREN, "Expect ')' after condition.")
 	body := p.statement()
 
-	return WhileStmt{condition, body}
+	return &WhileStmt{condition, body}
 }
 
 func (p *Parser) block() []Stmt {
@@ -161,7 +162,7 @@ func (p *Parser) statement() Stmt {
 		return p.whileStatement()
 	}
 	if p.match(LEFT_BRACE) {
-		return BlockStmt{statements: p.block()}
+		return &BlockStmt{statements: p.block()}
 	}
 
 	return p.expressionStatement()
@@ -200,10 +201,10 @@ func (p *Parser) forStatement() Stmt {
 	body := p.statement()
 
 	if increment != nil {
-		body = BlockStmt{
+		body = &BlockStmt{
 			statements: []Stmt{
 				body,
-				ExpressionStmt{expression: *increment},
+				&ExpressionStmt{expression: *increment},
 			},
 		}
 	}
@@ -215,10 +216,10 @@ func (p *Parser) forStatement() Stmt {
 		condition = &casted
 	}
 
-	body = WhileStmt{condition: *condition, body: body}
+	body = &WhileStmt{condition: *condition, body: body}
 
 	if initializer != nil {
-		body = BlockStmt{
+		body = &BlockStmt{
 			statements: []Stmt{
 				*initializer,
 				body,
@@ -241,13 +242,13 @@ func (p *Parser) ifStatement() Stmt {
 		elseBranch = p.statement()
 	}
 
-	return IfStmt{condition, thenBranch, &elseBranch}
+	return &IfStmt{condition, thenBranch, &elseBranch}
 }
 
 func (p *Parser) printStatement() Stmt {
 	value := p.expression()
 	p.consume(SEMICOLON, "Expect ;, after value")
-	return PrintStmt{expression: value}
+	return &PrintStmt{expression: value}
 }
 
 func (p *Parser) returnStatement() Stmt {
@@ -260,13 +261,13 @@ func (p *Parser) returnStatement() Stmt {
 	}
 
 	p.consume(SEMICOLON, "Expect ';' after return value.")
-	return ReturnStmt{keyword, *value}
+	return &ReturnStmt{keyword, *value}
 }
 
 func (p *Parser) expressionStatement() Stmt {
 	expr := p.expression()
 	p.consume(SEMICOLON, "Expect ';' after expression.")
-	return ExpressionStmt{expression: expr}
+	return &ExpressionStmt{expression: expr}
 }
 
 func (p *Parser) expression() Expr {
@@ -280,8 +281,8 @@ func (p *Parser) assignment() Expr {
 		equals := p.previous()
 		value := p.assignment()
 
-		if target, ok := expr.(VariableExpr); ok {
-			return AssignExpr{Name: target.Name, Value: value}
+		if target, ok := expr.(*VariableExpr); ok {
+			return &AssignExpr{Name: target.Name, Value: value}
 		}
 
 		// todo: error handling
@@ -297,7 +298,7 @@ func (p *Parser) or() Expr {
 	for p.match(OR) {
 		operator := p.previous()
 		right := p.and()
-		expr = LogicalExpr{left: expr, operator: operator, right: right}
+		expr = &LogicalExpr{left: expr, operator: operator, right: right}
 	}
 
 	return expr
@@ -310,7 +311,7 @@ func (p *Parser) and() Expr {
 		operator := p.previous()
 		right := p.equality()
 
-		expr = LogicalExpr{left: expr, operator: operator, right: right}
+		expr = &LogicalExpr{left: expr, operator: operator, right: right}
 	}
 
 	return expr
@@ -322,7 +323,7 @@ func (p *Parser) equality() Expr {
 	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
 		operator := p.previous()
 		right := p.comparison()
-		expr = BinaryExpr{expr, operator, right}
+		expr = &BinaryExpr{expr, operator, right}
 	}
 
 	return expr
@@ -334,7 +335,7 @@ func (p *Parser) comparison() Expr {
 	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
 		operator := p.previous()
 		right := p.term()
-		expr = BinaryExpr{expr, operator, right}
+		expr = &BinaryExpr{expr, operator, right}
 	}
 
 	return expr
@@ -346,7 +347,7 @@ func (p *Parser) term() Expr {
 	for p.match(MINUS, PLUS) {
 		operator := p.previous()
 		right := p.factor()
-		expr = BinaryExpr{expr, operator, right}
+		expr = &BinaryExpr{expr, operator, right}
 	}
 
 	return expr
@@ -358,7 +359,7 @@ func (p *Parser) factor() Expr {
 	for p.match(SLASH, STAR) {
 		operator := p.previous()
 		right := p.unary()
-		expr = BinaryExpr{expr, operator, right}
+		expr = &BinaryExpr{expr, operator, right}
 	}
 
 	return expr
@@ -369,7 +370,7 @@ func (p *Parser) unary() Expr {
 		operator := p.previous()
 		right := p.unary()
 
-		return UnaryExpr{Operator: operator, Right: right}
+		return &UnaryExpr{Operator: operator, Right: right}
 	}
 
 	return p.call()
@@ -394,7 +395,7 @@ func (p *Parser) finishCall(callee Expr) Expr {
 
 	paren := p.consume(RIGHT_PAREN, "Expect ')' after arguments.")
 
-	return CallExpr{callee, paren, arguments}
+	return &CallExpr{callee, paren, arguments}
 }
 
 func (p *Parser) call() Expr {
@@ -413,27 +414,27 @@ func (p *Parser) call() Expr {
 
 func (p *Parser) primary() Expr {
 	if p.match(FALSE) {
-		return LiteralExpr{Value: false}
+		return &LiteralExpr{Value: false}
 	}
 	if p.match(TRUE) {
-		return LiteralExpr{Value: true}
+		return &LiteralExpr{Value: true}
 	}
 	if p.match(NIL) {
-		return LiteralExpr{Value: nil}
+		return &LiteralExpr{Value: nil}
 	}
 
 	if p.match(NUMBER, STRING) {
-		return LiteralExpr{Value: p.previous().literal}
+		return &LiteralExpr{Value: p.previous().literal}
 	}
 
 	if p.match(IDENTIFIER) {
-		return VariableExpr{Name: p.previous()}
+		return &VariableExpr{Name: p.previous()}
 	}
 
 	if p.match(LEFT_PAREN) {
 		expr := p.expression()
 		p.consume(RIGHT_PAREN, "Expect ')' after expression.")
-		return GroupingExpr{Expression: expr}
+		return &GroupingExpr{Expression: expr}
 	}
 
 	// todo: better error object
