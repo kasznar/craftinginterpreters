@@ -114,6 +114,22 @@ func containsKey() {
 	fmt.Println("two ", ok)
 }
 
+type Spendable interface {
+	spend()
+}
+
+type Money struct {
+	amount int
+}
+
+func (m *Money) spend() {
+	fmt.Println("two ", m.amount)
+}
+
+func returnPointer() Spendable {
+	return &Money{100}
+}
+
 func main() {
 	//compareStructs()
 	mapLookUpByStruct()
