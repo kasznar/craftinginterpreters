@@ -40,6 +40,32 @@ func mapLookUpByStruct() {
 	fmt.Println(myMap)
 }
 
+func mapLookUpByPointer() {
+	fmt.Println("MAP LOOKUP BY REFERENCE")
+
+	message1 := &Message{"hello1"}
+	message2 := &Message{"hello1"}
+
+	message3 := &Message{"hello3"}
+
+	myMap := map[*Message]int{}
+
+	myMap[message1] = 1
+	// no longer changes the same one
+	myMap[message2] = 2
+
+	fmt.Println(myMap[message1])
+	fmt.Println(myMap[message2])
+
+	// default value is returned
+	fmt.Println(myMap[message3])
+
+	fmt.Println(myMap[&Message{"hello1"}])
+
+	fmt.Println(myMap)
+
+}
+
 func slicesShareUnderlyingArray() {
 	names := [4]string{
 		"John",
@@ -90,8 +116,9 @@ func containsKey() {
 
 func main() {
 	//compareStructs()
-	//mapLookUpByStruct()
+	mapLookUpByStruct()
+	mapLookUpByPointer()
 	//slicesShareUnderlyingArray()
 	//lengthAndCapacity()
-	containsKey()
+	//containsKey()
 }
