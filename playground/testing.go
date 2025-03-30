@@ -130,11 +130,32 @@ func returnPointer() Spendable {
 	return &Money{100}
 }
 
+type StructWithMat struct {
+	values map[string]bool
+	last   string
+}
+
+func (s StructWithMat) add(key string) {
+	// note: maps can be modified without a pointer modifier
+	s.values[key] = true
+	// note: values on the other hand can't be modified
+	s.last = key
+}
+
+func mapInNotPointerReceiver() {
+	myMap := StructWithMat{map[string]bool{}, "default"}
+
+	myMap.add("hello")
+
+	fmt.Println(myMap)
+}
+
 func main() {
 	//compareStructs()
-	mapLookUpByStruct()
-	mapLookUpByPointer()
+	//mapLookUpByStruct()
+	//mapLookUpByPointer()
 	//slicesShareUnderlyingArray()
 	//lengthAndCapacity()
-	//containsKey()
+	containsKey()
+	//mapInNotPointerReceiver()
 }

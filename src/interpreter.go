@@ -260,6 +260,7 @@ func (i *Interpreter) VisitWhileStmt(stmt *WhileStmt) {
 }
 
 func (i *Interpreter) VisitCallExpr(expr *CallExpr) any {
+	// todo: note this does not return a pointer as I understand
 	callee := i.evaluate(expr.callee)
 
 	arguments := make([]any, 0)
@@ -280,7 +281,44 @@ func (i *Interpreter) VisitCallExpr(expr *CallExpr) any {
 	return function.Call(i, arguments)
 }
 
+func (i *Interpreter) VisitGetExpr(expr *GetExpr) any {
+	object := i.evaluate(expr.object)
+
+	instance, ok := object.(LoxInstance)
+	if ok {
+		return instance.get(expr.name)
+	}
+
+	panic(fmt.Errorf("Only instances have properties."))
+}
+
+func (i *Interpreter) VisitSetExpr(expr *SetExpr) any {
+	object := i.evaluate(expr.object)
+
+	if instance, ok := object.(LoxInstance); ok {
+		value := i.evaluate(expr.value)
+		instance.set(expr.name, value)
+		return value
+	} else {
+		panic(fmt.Errorf(expr.name.lexeme + "ONly instances have fields"))
+	}
+}
+
 func (i *Interpreter) VisitFunctionStmt(stmt *FunctionStmt) {
 	function := LoxFunction{stmt, i.environment}
 	i.environment.define(stmt.name.lexeme, function)
+}
+
+func (i *Interpreter) VisitClassStmt(stmt *ClassStmt) {
+	i.environment.define(stmt.name.lexeme, nil)
+
+	methods := make(map[string]*LoxFunction)
+
+	for _, method := range stmt.methods {
+		function := &LoxFunction{method, i.environment}
+		methods[method.name.lexeme] = function
+	}
+
+	class := LoxClass{stmt.name.lexeme, methods}
+	i.environment.assign(stmt.name, class)
 }

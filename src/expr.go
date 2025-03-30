@@ -13,6 +13,8 @@ type ExprVisitor interface {
 	VisitAssignExpr(expr *AssignExpr) any
 	VisitLogicalExpr(expr *LogicalExpr) any
 	VisitCallExpr(expr *CallExpr) any
+	VisitGetExpr(expr *GetExpr) any
+	VisitSetExpr(expr *SetExpr) any
 }
 
 type BinaryExpr struct {
@@ -85,4 +87,23 @@ type CallExpr struct {
 
 func (e *CallExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitCallExpr(e)
+}
+
+type GetExpr struct {
+	object Expr
+	name   Token
+}
+
+func (e *GetExpr) Accept(visitor ExprVisitor) any {
+	return visitor.VisitGetExpr(e)
+}
+
+type SetExpr struct {
+	object Expr
+	name   Token
+	value  Expr
+}
+
+func (e *SetExpr) Accept(visitor ExprVisitor) any {
+	return visitor.VisitSetExpr(e)
 }

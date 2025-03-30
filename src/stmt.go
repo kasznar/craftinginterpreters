@@ -13,6 +13,17 @@ type StmtVisitor interface {
 	VisitWhileStmt(stmt *WhileStmt)
 	VisitFunctionStmt(stmt *FunctionStmt)
 	VisitReturnStmt(stmt *ReturnStmt)
+	VisitClassStmt(stmt *ClassStmt)
+}
+
+type ClassStmt struct {
+	name Token
+	// todo: superclass any
+	methods []*FunctionStmt
+}
+
+func (s *ClassStmt) Accept(visitor StmtVisitor) {
+	visitor.VisitClassStmt(s)
 }
 
 type ExpressionStmt struct {

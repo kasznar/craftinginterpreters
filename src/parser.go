@@ -73,6 +73,9 @@ func (p *Parser) parse() (statements []Stmt, err error) {
 
 func (p *Parser) declaration() Stmt {
 	// todo: error handling
+	if p.match(CLASS) {
+		return p.classDeclaration()
+	}
 	if p.match(FUN) {
 		return p.function("functions")
 	}
@@ -81,6 +84,21 @@ func (p *Parser) declaration() Stmt {
 	}
 
 	return p.statement()
+}
+
+func (p *Parser) classDeclaration() Stmt {
+	name := p.consume(IDENTIFIER, "Expect class name.")
+	p.consume(LEFT_BRACE, "Expect '{' before class body.")
+
+	var methods []*FunctionStmt
+
+	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+		methods = append(methods, p.function("method"))
+	}
+
+	p.consume(RIGHT_BRACE, "Expect '}' after class body.")
+
+	return &ClassStmt{name, methods}
 }
 
 func (p *Parser) function(kind string) *FunctionStmt {
@@ -283,6 +301,8 @@ func (p *Parser) assignment() Expr {
 
 		if target, ok := expr.(*VariableExpr); ok {
 			return &AssignExpr{Name: target.Name, Value: value}
+		} else if target, ok := expr.(*GetExpr); ok {
+			return &SetExpr{target.object, target.name, value}
 		}
 
 		// todo: error handling
@@ -404,6 +424,9 @@ func (p *Parser) call() Expr {
 	for {
 		if p.match(LEFT_PAREN) {
 			expr = p.finishCall(expr)
+		} else if p.match(DOT) {
+			name := p.consume(IDENTIFIER, "Expect property name after '.'.")
+			expr = &GetExpr{expr, name}
 		} else {
 			break
 		}
