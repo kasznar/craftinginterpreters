@@ -1,5 +1,7 @@
 package src
 
+import "fmt"
+
 type Scope map[string]bool
 
 type FunctionType int
@@ -8,12 +10,21 @@ const (
 	NONE_FUNCTION FunctionType = iota
 	FUNCTION
 	METHOD
+	INITIALIZER
+)
+
+type ClassType int
+
+const (
+	NOT_CLASS ClassType = iota
+	IS_CLASS
 )
 
 type Resolver struct {
 	interpreter     *Interpreter
 	scopes          []Scope
 	currentFunction FunctionType
+	currentClass    ClassType
 }
 
 func NewResolver(interpreter *Interpreter) *Resolver {
@@ -21,6 +32,7 @@ func NewResolver(interpreter *Interpreter) *Resolver {
 		interpreter:     interpreter,
 		scopes:          []Scope{},
 		currentFunction: NONE_FUNCTION,
+		currentClass:    NOT_CLASS,
 	}
 }
 
@@ -153,6 +165,15 @@ func (r *Resolver) VisitSetExpr(expr *SetExpr) any {
 	return nil
 }
 
+func (r *Resolver) VisitThisExpr(expr *ThisExpr) any {
+	if r.currentClass == NOT_CLASS {
+		panic(fmt.Errorf(expr.keyword.lexeme + " Can't use 'this' outside of a class."))
+	}
+
+	r.resolveLocal(expr, expr.keyword)
+	return nil
+}
+
 func (r *Resolver) VisitExpressionStmt(stmt *ExpressionStmt) {
 	r.resolveExpr(stmt.expression)
 }
@@ -203,16 +224,31 @@ func (r *Resolver) VisitReturnStmt(stmt *ReturnStmt) {
 
 	// todo: optional value?
 	if stmt.value != nil {
-		r.resolveExpr(stmt.value)
+		if r.currentFunction == INITIALIZER {
+			panic(fmt.Errorf("can't return a value from an initializer"))
+		}
+		r.resolveExpr(*stmt.value)
 	}
 }
 
 func (r *Resolver) VisitClassStmt(stmt *ClassStmt) {
+	enclosingClass := r.currentClass
+	r.currentClass = IS_CLASS
+
 	r.declare(stmt.name)
 	r.define(stmt.name)
 
+	r.beginScope()
+	r.peekScope()["this"] = true
+
 	for _, method := range stmt.methods {
 		declaration := METHOD
+		if method.name.lexeme == "init" {
+			declaration = INITIALIZER
+		}
 		r.resolveFunction(method, declaration)
 	}
+
+	r.endScope()
+	r.currentClass = enclosingClass
 }

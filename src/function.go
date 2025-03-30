@@ -7,8 +7,15 @@ type LoxCallable interface {
 }
 
 type LoxFunction struct {
-	declaration *FunctionStmt
-	closure     *Environment
+	declaration   *FunctionStmt
+	closure       *Environment
+	isInitializer bool
+}
+
+func (f LoxFunction) Bind(instance LoxInstance) *LoxFunction {
+	environment := NewEnvironment(f.closure)
+	environment.define("this", instance)
+	return &LoxFunction{f.declaration, environment, f.isInitializer}
 }
 
 func (f LoxFunction) Arity() int {
@@ -24,6 +31,11 @@ func (f LoxFunction) Call(interpreter *Interpreter, arguments []any) (returnValu
 
 	defer func() {
 		if exception := recover(); exception != nil {
+			if f.isInitializer {
+				returnValue = f.closure.getAt(0, "this")
+				return
+			}
+
 			rv := exception.(*Return)
 			returnValue = rv.value
 		}
@@ -31,6 +43,9 @@ func (f LoxFunction) Call(interpreter *Interpreter, arguments []any) (returnValu
 
 	interpreter.executeBlock(f.declaration.body, environment)
 
+	if f.isInitializer {
+		return f.closure.getAt(0, "this")
+	}
 	return nil
 }
 

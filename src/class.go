@@ -9,11 +9,22 @@ type LoxClass struct {
 
 // Arity todo: pointer receiver or no pointer receiver
 func (c LoxClass) Arity() int {
-	return 0
+	initializer := c.findMethod("init")
+
+	if initializer == nil {
+		return 0
+	}
+
+	return initializer.Arity()
 }
 
 func (c LoxClass) Call(interpreter *Interpreter, arguments []any) any {
 	instance := LoxInstance{c, make(map[string]any)}
+	initializer := c.findMethod("init")
+
+	if initializer != nil {
+		initializer.Bind(instance).Call(interpreter, arguments)
+	}
 
 	return instance
 }
@@ -44,7 +55,7 @@ func (i LoxInstance) get(name Token) any {
 	method := i.class.methods[name.lexeme]
 
 	if method != nil {
-		return method
+		return method.Bind(i)
 	}
 
 	panic(fmt.Errorf("Undefined property '" + name.lexeme + "'."))

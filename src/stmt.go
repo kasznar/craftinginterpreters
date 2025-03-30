@@ -91,7 +91,7 @@ func (s *FunctionStmt) Accept(visitor StmtVisitor) {
 type ReturnStmt struct {
 	keyword Token
 	// todo: optional value?
-	value Expr
+	value *Expr
 }
 
 func (s *ReturnStmt) Accept(visitor StmtVisitor) {

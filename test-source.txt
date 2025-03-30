@@ -1,7 +1,19 @@
 class Bacon {
   eat() {
-    print "Crunch crunch crunch!";
+      print "!";
+      print "Crunch crunch crunch!" + this.food;
+  }
+
+  init() {
+      this.food = "food";
+      return;
   }
 }
 
+fun hi() {
+    return;
+}
+
+
+print "hi";
 Bacon().eat(); // Prints "Crunch crunch crunch!".

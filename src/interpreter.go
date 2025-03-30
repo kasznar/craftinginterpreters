@@ -117,7 +117,7 @@ func (i *Interpreter) VisitPrintStmt(stmt *PrintStmt) {
 func (i *Interpreter) VisitReturnStmt(stmt *ReturnStmt) {
 	var value any = nil
 	if stmt.value != nil {
-		value = i.evaluate(stmt.value)
+		value = i.evaluate(*stmt.value)
 	}
 
 	panic(&Return{value})
@@ -304,8 +304,12 @@ func (i *Interpreter) VisitSetExpr(expr *SetExpr) any {
 	}
 }
 
+func (i *Interpreter) VisitThisExpr(expr *ThisExpr) any {
+	return i.lookUpVariable(expr.keyword, expr)
+}
+
 func (i *Interpreter) VisitFunctionStmt(stmt *FunctionStmt) {
-	function := LoxFunction{stmt, i.environment}
+	function := LoxFunction{stmt, i.environment, false}
 	i.environment.define(stmt.name.lexeme, function)
 }
 
@@ -315,7 +319,9 @@ func (i *Interpreter) VisitClassStmt(stmt *ClassStmt) {
 	methods := make(map[string]*LoxFunction)
 
 	for _, method := range stmt.methods {
-		function := &LoxFunction{method, i.environment}
+		isInitializer := method.name.lexeme == "init"
+
+		function := &LoxFunction{method, i.environment, isInitializer}
 		methods[method.name.lexeme] = function
 	}
 

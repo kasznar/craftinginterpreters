@@ -279,7 +279,8 @@ func (p *Parser) returnStatement() Stmt {
 	}
 
 	p.consume(SEMICOLON, "Expect ';' after return value.")
-	return &ReturnStmt{keyword, *value}
+
+	return &ReturnStmt{keyword, value}
 }
 
 func (p *Parser) expressionStatement() Stmt {
@@ -448,6 +449,10 @@ func (p *Parser) primary() Expr {
 
 	if p.match(NUMBER, STRING) {
 		return &LiteralExpr{Value: p.previous().literal}
+	}
+
+	if p.match(THIS) {
+		return &ThisExpr{p.previous()}
 	}
 
 	if p.match(IDENTIFIER) {

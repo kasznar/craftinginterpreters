@@ -15,6 +15,7 @@ type ExprVisitor interface {
 	VisitCallExpr(expr *CallExpr) any
 	VisitGetExpr(expr *GetExpr) any
 	VisitSetExpr(expr *SetExpr) any
+	VisitThisExpr(expr *ThisExpr) any
 }
 
 type BinaryExpr struct {
@@ -106,4 +107,12 @@ type SetExpr struct {
 
 func (e *SetExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitSetExpr(e)
+}
+
+type ThisExpr struct {
+	keyword Token
+}
+
+func (e *ThisExpr) Accept(visitor ExprVisitor) any {
+	return visitor.VisitThisExpr(e)
 }
