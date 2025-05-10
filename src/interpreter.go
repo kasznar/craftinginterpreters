@@ -314,6 +314,16 @@ func (i *Interpreter) VisitFunctionStmt(stmt *FunctionStmt) {
 }
 
 func (i *Interpreter) VisitClassStmt(stmt *ClassStmt) {
+	var superclass *LoxClass
+
+	if stmt.superclass != nil {
+		super := i.evaluate(stmt.superclass)
+		var ok bool
+		if superclass, ok = super.(*LoxClass); !ok {
+			panic(fmt.Errorf("wrong number of arguments"))
+		}
+	}
+
 	i.environment.define(stmt.name.lexeme, nil)
 
 	methods := make(map[string]*LoxFunction)
@@ -325,6 +335,6 @@ func (i *Interpreter) VisitClassStmt(stmt *ClassStmt) {
 		methods[method.name.lexeme] = function
 	}
 
-	class := LoxClass{stmt.name.lexeme, methods}
+	class := LoxClass{stmt.name.lexeme, superclass, methods}
 	i.environment.assign(stmt.name, class)
 }

@@ -3,8 +3,9 @@ package src
 import "fmt"
 
 type LoxClass struct {
-	name    string
-	methods map[string]*LoxFunction
+	name       string
+	superclass *LoxClass
+	methods    map[string]*LoxFunction
 }
 
 // Arity todo: pointer receiver or no pointer receiver
@@ -34,6 +35,10 @@ func (c LoxClass) String() string {
 }
 
 func (c LoxClass) findMethod(name string) *LoxFunction {
+	if c.superclass != nil {
+		return c.superclass.findMethod(name)
+	}
+
 	return c.methods[name]
 }
 

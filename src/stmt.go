@@ -17,9 +17,9 @@ type StmtVisitor interface {
 }
 
 type ClassStmt struct {
-	name Token
-	// todo: superclass any
-	methods []*FunctionStmt
+	name       Token
+	superclass *VariableExpr
+	methods    []*FunctionStmt
 }
 
 func (s *ClassStmt) Accept(visitor StmtVisitor) {
