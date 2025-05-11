@@ -284,7 +284,7 @@ func (i *Interpreter) VisitCallExpr(expr *CallExpr) any {
 func (i *Interpreter) VisitGetExpr(expr *GetExpr) any {
 	object := i.evaluate(expr.object)
 
-	instance, ok := object.(LoxInstance)
+	instance, ok := object.(*LoxInstance)
 	if ok {
 		return instance.get(expr.name)
 	}
@@ -326,6 +326,11 @@ func (i *Interpreter) VisitClassStmt(stmt *ClassStmt) {
 
 	i.environment.define(stmt.name.lexeme, nil)
 
+	if stmt.superclass != nil {
+		i.environment = NewEnvironment(i.environment)
+		i.environment.define("super", superclass)
+	}
+
 	methods := make(map[string]*LoxFunction)
 
 	for _, method := range stmt.methods {
@@ -336,5 +341,24 @@ func (i *Interpreter) VisitClassStmt(stmt *ClassStmt) {
 	}
 
 	class := &LoxClass{stmt.name.lexeme, superclass, methods}
+
+	if superclass != nil {
+		i.environment = i.environment.enclosing
+	}
+
 	i.environment.assign(stmt.name, class)
+}
+
+func (i *Interpreter) VisitSuperExpr(expr *SuperExpr) any {
+	distance := i.locals[expr]
+	superclass := i.environment.getAt(distance, "super").(*LoxClass)
+	object := i.environment.getAt(distance-1, "this").(*LoxInstance)
+
+	method := superclass.findMethod(expr.method.lexeme)
+
+	if method == nil {
+		panic(fmt.Errorf("undefined property " + expr.method.lexeme))
+	}
+
+	return method.Bind(object)
 }

@@ -16,6 +16,7 @@ type ExprVisitor interface {
 	VisitGetExpr(expr *GetExpr) any
 	VisitSetExpr(expr *SetExpr) any
 	VisitThisExpr(expr *ThisExpr) any
+	VisitSuperExpr(expr *SuperExpr) any
 }
 
 type BinaryExpr struct {
@@ -115,4 +116,13 @@ type ThisExpr struct {
 
 func (e *ThisExpr) Accept(visitor ExprVisitor) any {
 	return visitor.VisitThisExpr(e)
+}
+
+type SuperExpr struct {
+	keyword Token
+	method  Token
+}
+
+func (e *SuperExpr) Accept(visitor ExprVisitor) any {
+	return visitor.VisitSuperExpr(e)
 }

@@ -18,6 +18,7 @@ type ClassType int
 const (
 	NOT_CLASS ClassType = iota
 	IS_CLASS
+	SUBCLASS
 )
 
 type Resolver struct {
@@ -243,7 +244,14 @@ func (r *Resolver) VisitClassStmt(stmt *ClassStmt) {
 	}
 
 	if stmt.superclass != nil {
+		r.currentClass = SUBCLASS
 		r.resolveExpr(stmt.superclass)
+	}
+
+	// todo: check
+	if stmt.superclass != nil {
+		r.beginScope()
+		r.peekScope()["super"] = true
 	}
 
 	r.beginScope()
@@ -258,5 +266,21 @@ func (r *Resolver) VisitClassStmt(stmt *ClassStmt) {
 	}
 
 	r.endScope()
+
+	if stmt.superclass != nil {
+		r.endScope()
+	}
+
 	r.currentClass = enclosingClass
+}
+
+func (r *Resolver) VisitSuperExpr(expr *SuperExpr) any {
+	if r.currentClass == NOT_CLASS {
+		panic(fmt.Errorf("can't use 'super' outside of a class"))
+	} else if r.currentClass != SUBCLASS {
+		panic(fmt.Errorf("can't use 'super' in a class with no superclass"))
+	}
+
+	r.resolveLocal(expr, expr.keyword)
+	return nil
 }
