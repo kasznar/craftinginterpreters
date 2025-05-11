@@ -1,6 +1,8 @@
 package src
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type LoxClass struct {
 	name       string
@@ -20,7 +22,7 @@ func (c LoxClass) Arity() int {
 }
 
 func (c LoxClass) Call(interpreter *Interpreter, arguments []any) any {
-	instance := LoxInstance{c, make(map[string]any)}
+	instance := &LoxInstance{c, make(map[string]any)}
 	initializer := c.findMethod("init")
 
 	if initializer != nil {
@@ -35,11 +37,15 @@ func (c LoxClass) String() string {
 }
 
 func (c LoxClass) findMethod(name string) *LoxFunction {
+	if method, ok := c.methods[name]; ok {
+		return method
+	}
+
 	if c.superclass != nil {
 		return c.superclass.findMethod(name)
 	}
 
-	return c.methods[name]
+	return nil
 }
 
 type LoxInstance struct {
@@ -51,7 +57,7 @@ func (i LoxInstance) String() string {
 	return i.class.name + " instance"
 }
 
-func (i LoxInstance) get(name Token) any {
+func (i *LoxInstance) get(name Token) any {
 	if value, ok := i.fields[name.lexeme]; ok {
 		return value
 	}

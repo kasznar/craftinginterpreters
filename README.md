@@ -17,3 +17,9 @@ call           → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
 assignment     → ( call "." )? IDENTIFIER "=" assignment
                | logic_or ;
 ```
+
+```
+primary        → "true" | "false" | "nil" | "this"
+               | NUMBER | STRING | IDENTIFIER | "(" expression ")"
+               | "super" "." IDENTIFIER ;
+```

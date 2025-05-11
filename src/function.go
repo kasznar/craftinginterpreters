@@ -12,7 +12,7 @@ type LoxFunction struct {
 	isInitializer bool
 }
 
-func (f LoxFunction) Bind(instance LoxInstance) *LoxFunction {
+func (f LoxFunction) Bind(instance *LoxInstance) *LoxFunction {
 	environment := NewEnvironment(f.closure)
 	environment.define("this", instance)
 	return &LoxFunction{f.declaration, environment, f.isInitializer}
