@@ -320,7 +320,7 @@ func (i *Interpreter) VisitClassStmt(stmt *ClassStmt) {
 		super := i.evaluate(stmt.superclass)
 		var ok bool
 		if superclass, ok = super.(*LoxClass); !ok {
-			panic(fmt.Errorf("wrong number of arguments"))
+			panic(fmt.Errorf("superclass must be a class"))
 		}
 	}
 
@@ -335,6 +335,6 @@ func (i *Interpreter) VisitClassStmt(stmt *ClassStmt) {
 		methods[method.name.lexeme] = function
 	}
 
-	class := LoxClass{stmt.name.lexeme, superclass, methods}
+	class := &LoxClass{stmt.name.lexeme, superclass, methods}
 	i.environment.assign(stmt.name, class)
 }

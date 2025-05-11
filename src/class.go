@@ -56,8 +56,7 @@ func (i LoxInstance) get(name Token) any {
 		return value
 	}
 
-	// todo: can this find the method through class, which is not a pointer?
-	method := i.class.methods[name.lexeme]
+	method := i.class.findMethod(name.lexeme)
 
 	if method != nil {
 		return method.Bind(i)
